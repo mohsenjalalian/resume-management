@@ -1,0 +1,21 @@
+version: '2.3'
+services:
+    rsm-mariadb:
+        image: mariadb:10.3.11
+        container_name: rsm-mariadb
+        ports:
+            - 3306:3306
+        volumes:
+            - mariadata:/var/lib/mysql
+            - ./docker/mariadb/my.cnf:/etc/mysql/conf.d/my.cnf
+        environment:
+            - MYSQL_ROOT_PASSWORD=123456
+    rsm-phpmyadmin:
+        image: phpmyadmin/phpmyadmin:4.8.3
+        container_name: rsm-phpmyadmin
+        environment:
+            - PMA_HOST=rsm-mariadb
+        ports:
+            - 8080:80
+volumes:
+    mariadata:
