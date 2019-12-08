@@ -1,25 +1,26 @@
 package main
 
 import (
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/v4"
 	"io"
 	"net/http"
 	"os"
-	"database/sql"
-    _ "github.com/go-sql-driver/mysql"	
 )
 
+type Resume struct {
+	Id    int
+	Title string
+	Path  string
+}
+
 func main() {
-	db, err := sql.Open("mysql", "username:password@tcp(127.0.0.1:3306)/test")
-
-    // if there is an error opening the connection, handle it
-    if err != nil {
-        panic(err.Error())
-    }
-
-    // defer the close till after the main function has finished
-    // executing
-    defer db.Close()
+	db, err := gorm.Open("mysql", "root:123456@/resume_mng?charset=utf8&parseTime=True&loc=Local")
+	if err != nil {
+		panic("failed to connect database")
+	  }
+	defer db.Close()
 	handleRequests()
 }
 
