@@ -7,30 +7,34 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"log"
 )
 
 type Resume struct {
-	Id    int
-	Title string
-	Path  string
+	Title string `json:"title"`
+	Path  string `json:"path"`
 }
 
+var db *gorm.DB
+var err error
+
 func main() {
-	db, err := gorm.Open("mysql", "root:123456@/resume_mng?charset=utf8&parseTime=True&loc=Local")
+	db, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/resume_mng?charset=utf8&parseTime=True")
 	if err != nil {
-		panic("failed to connect database")
+		log.Println("Connection Failed to Open")
 	  }
-	defer db.Close()
+	defer db.Close()	
 	handleRequests()
 }
 
 func handleRequests() {
 	e := echo.New()
-	e.POST("/", index)
+	e.GET("/", index)
+	e.POST("/", new)
 	e.Logger.Fatal(e.Start(":5500"))
 }
 
-func index(c echo.Context) error {
+func new(c echo.Context) error {
 	fl, err := c.FormFile("file")
 	if err != nil {
 		return err
@@ -57,4 +61,11 @@ func index(c echo.Context) error {
 	}
 
 	return c.String(http.StatusOK, "success")
+}
+
+func index(c echo.Context) error {
+	resume := []Resume{}
+ 	db.Find(&resume)
+
+	return c.JSON(http.StatusOK, resume)
 }
