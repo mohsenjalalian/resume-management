@@ -5,9 +5,11 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/v4"
 	"io"
+	"log"
 	"net/http"
 	"os"
-	"log"
+	"strconv"
+	"time"	
 )
 
 type Resume struct {
@@ -22,8 +24,8 @@ func main() {
 	db, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/resume_mng?charset=utf8&parseTime=True")
 	if err != nil {
 		log.Println("Connection Failed to Open")
-	  }
-	defer db.Close()	
+	}
+	defer db.Close()
 	handleRequests()
 }
 
@@ -31,14 +33,18 @@ func handleRequests() {
 	e := echo.New()
 	e.GET("/", index)
 	e.POST("/", new)
-	e.Logger.Fatal(e.Start(":5500"))
+	e.Logger.Fatal(e.Start(":5600"))
 }
 
 func new(c echo.Context) error {
 	fl, err := c.FormFile("file")
+
 	if err != nil {
 		return err
 	}
+
+	title := c.FormValue("title")
+	path := strconv.FormatInt(time.Now().UTC().Unix(), 10)
 
 	// Source
 	src, err := fl.Open()
@@ -49,7 +55,7 @@ func new(c echo.Context) error {
 	defer src.Close()
 
 	// Destination
-	dst, err := os.Create(fl.Filename)
+	dst, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -60,12 +66,15 @@ func new(c echo.Context) error {
 		return err
 	}
 
+	var resume = Resume{Title: title, Path: path}
+	db.Create(&resume)
+
 	return c.String(http.StatusOK, "success")
 }
 
 func index(c echo.Context) error {
 	resume := []Resume{}
- 	db.Find(&resume)
+	db.Find(&resume)
 
 	return c.JSON(http.StatusOK, resume)
 }
