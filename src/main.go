@@ -32,6 +32,7 @@ func main() {
 func handleRequests() {
 	e := echo.New()
 	e.GET("/", index)
+	e.GET("/search", search)
 	e.POST("/", new)
 	e.Logger.Fatal(e.Start(":5600"))
 }
@@ -55,7 +56,7 @@ func new(c echo.Context) error {
 	defer src.Close()
 
 	// Destination
-	dst, err := os.Create(path)
+	dst, err := os.Create(path + ".pdf")
 	if err != nil {
 		return err
 	}
@@ -66,7 +67,7 @@ func new(c echo.Context) error {
 		return err
 	}
 
-	var resume = Resume{Title: title, Path: path}
+	var resume = Resume{Title: title, Path: path + ".pdf"}
 	db.Create(&resume)
 
 	return c.String(http.StatusOK, "success")
@@ -77,4 +78,9 @@ func index(c echo.Context) error {
 	db.Find(&resume)
 
 	return c.JSON(http.StatusOK, resume)
+}
+
+func search(c echo.Context) error {
+	keyword := c.QueryParam("keyword")
+	return c.JSON(http.StatusOK, keyword)
 }
