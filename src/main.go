@@ -10,11 +10,12 @@ import (
 	"os"
 	"strconv"
 	"time"	
-)
+    "code.sajari.com/docconv")
 
 type Resume struct {
 	Title string `json:"title"`
 	Path  string `json:"path"`
+	Content string `json:"content"`
 }
 
 var db *gorm.DB
@@ -67,7 +68,11 @@ func new(c echo.Context) error {
 		return err
 	}
 
-	var resume = Resume{Title: title, Path: path + ".pdf"}
+	content, err := docconv.ConvertPath(path + ".pdf")
+    if err != nil {
+        log.Fatal(err)
+    }
+	var resume = Resume{Title: title, Path: path + ".pdf", Content: content.Body}
 	db.Create(&resume)
 
 	return c.String(http.StatusOK, "success")
@@ -82,5 +87,9 @@ func index(c echo.Context) error {
 
 func search(c echo.Context) error {
 	keyword := c.QueryParam("keyword")
-	return c.JSON(http.StatusOK, keyword)
+
+	resume := []Resume{}
+	db.Where("content LIKE ?", "%" + keyword + "%").Find(&resume)
+
+	return c.JSON(http.StatusOK, resume)
 }
