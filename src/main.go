@@ -10,7 +10,10 @@ import (
 	"os"
 	"strconv"
 	"time"	
-    "code.sajari.com/docconv")
+	"code.sajari.com/docconv"
+	"github.com/joho/godotenv"
+	"fmt"
+)
 
 type Resume struct {
 	Title string `json:"title"`
@@ -22,7 +25,25 @@ var db *gorm.DB
 var err error
 
 func main() {
-	db, err = gorm.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/resume_mng?charset=utf8&parseTime=True")
+	var appConfig map[string]string
+	appConfig, err := godotenv.Read()
+
+	if err != nil {
+		log.Fatal("Error reading .env file")
+	}
+	
+	mysqlCredentials := fmt.Sprintf(
+		"%s:%s@%s(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		appConfig["MYSQL_USER"],
+		appConfig["MYSQL_PASSWORD"],
+		appConfig["MYSQL_PROTOCOL"],
+		appConfig["MYSQL_HOST"],
+		appConfig["MYSQL_PORT"],
+		appConfig["MYSQL_DBNAME"],
+	)
+
+	db, err = gorm.Open("mysql", mysqlCredentials)
+	
 	if err != nil {
 		log.Println("Connection Failed to Open")
 	}
