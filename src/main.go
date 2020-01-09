@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jinzhu/gorm"
+        "github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/v4"
 	"io"
@@ -11,39 +11,20 @@ import (
 	"strconv"
 	"time"	
 	"code.sajari.com/docconv"
-	"github.com/joho/godotenv"
-	"fmt"
+	"github.com/mohsenjalalian/resume-management/db"
 )
-
-type Resume struct {
-	Title string `json:"title"`
-	Path  string `json:"path"`
-	Content string `json:"content"`
-}
 
 var db *gorm.DB
 var err error
 
+type Resume struct {
+	Title   string `json:"title"`
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
 func main() {
-	var appConfig map[string]string
-	appConfig, err := godotenv.Read()
-
-	if err != nil {
-		log.Fatal("Error reading .env file")
-	}
-	
-	mysqlCredentials := fmt.Sprintf(
-		"%s:%s@%s(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
-		appConfig["MYSQL_USER"],
-		appConfig["MYSQL_PASSWORD"],
-		appConfig["MYSQL_PROTOCOL"],
-		appConfig["MYSQL_HOST"],
-		appConfig["MYSQL_PORT"],
-		appConfig["MYSQL_DBNAME"],
-	)
-
-	db, err = gorm.Open("mysql", mysqlCredentials)
-	
+	db, err = mysql.Open()
 	if err != nil {
 		log.Println("Connection Failed to Open")
 	}
@@ -90,9 +71,9 @@ func new(c echo.Context) error {
 	}
 
 	content, err := docconv.ConvertPath(path + ".pdf")
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 	var resume = Resume{Title: title, Path: path + ".pdf", Content: content.Body}
 	db.Create(&resume)
 
@@ -110,7 +91,7 @@ func search(c echo.Context) error {
 	keyword := c.QueryParam("keyword")
 
 	resume := []Resume{}
-	db.Where("content LIKE ?", "%" + keyword + "%").Find(&resume)
+	db.Where("content LIKE ?", "%"+keyword+"%").Find(&resume)
 
 	return c.JSON(http.StatusOK, resume)
 }
