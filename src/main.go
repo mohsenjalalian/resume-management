@@ -1,34 +1,28 @@
 package main
 
 import (
-        "github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"github.com/labstack/echo/v4"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"time"	
+	"time"
+
 	"code.sajari.com/docconv"
-	"github.com/mohsenjalalian/resume-management/db"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/labstack/echo/v4"
+	"github.com/mohsenjalalian/resume-management/database"
+	"github.com/mohsenjalalian/resume-management/migration"
+	"github.com/mohsenjalalian/resume-management/models"
 )
 
-var db *gorm.DB
-var err error
-
-type Resume struct {
-	Title   string `json:"title"`
-	Path    string `json:"path"`
-	Content string `json:"content"`
-}
-
 func main() {
-	db, err = mysql.Open()
-	if err != nil {
+	mysql.Open()
+	if mysql.Err != nil {
 		log.Println("Connection Failed to Open")
 	}
-	defer db.Close()
+	migration.Migrate()
+	defer mysql.Db.Close()
 	handleRequests()
 }
 
@@ -74,15 +68,15 @@ func new(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var resume = Resume{Title: title, Path: path + ".pdf", Content: content.Body}
-	db.Create(&resume)
+	var resume = models.Resume{Title: title, Path: path + ".pdf", Content: content.Body}
+	mysql.Db.Create(&resume)
 
 	return c.String(http.StatusOK, "success")
 }
 
 func index(c echo.Context) error {
-	resume := []Resume{}
-	db.Find(&resume)
+	resume := []models.Resume{}
+	mysql.Db.Find(&resume)
 
 	return c.JSON(http.StatusOK, resume)
 }
@@ -90,8 +84,8 @@ func index(c echo.Context) error {
 func search(c echo.Context) error {
 	keyword := c.QueryParam("keyword")
 
-	resume := []Resume{}
-	db.Where("content LIKE ?", "%"+keyword+"%").Find(&resume)
+	resume := []models.Resume{}
+	mysql.Db.Where("content LIKE ?", "%"+keyword+"%").Find(&resume)
 
 	return c.JSON(http.StatusOK, resume)
 }

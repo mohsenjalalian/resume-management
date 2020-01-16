@@ -2,12 +2,16 @@ package mysql
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/jinzhu/gorm"
 	"github.com/joho/godotenv"
-	"log"
 )
 
-func Open() (*gorm.DB, error) {
+var Db *gorm.DB
+var Err error
+
+func Open() {
 	var appConfig map[string]string
 	appConfig, err := godotenv.Read()
 
@@ -25,5 +29,5 @@ func Open() (*gorm.DB, error) {
 		appConfig["MYSQL_DBNAME"],
 	)
 
-	return gorm.Open("mysql", mysqlCredentials)
+	Db, Err = gorm.Open("mysql", mysqlCredentials)
 }
