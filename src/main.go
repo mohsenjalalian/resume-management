@@ -42,7 +42,7 @@ func new(c echo.Context) error {
 	}
 
 	title := c.FormValue("title")
-	path := strconv.FormatInt(time.Now().UTC().Unix(), 10)
+	path := "statics/resumes/" + strconv.FormatInt(time.Now().UTC().Unix(), 10)
 
 	// Source
 	src, err := fl.Open()
