@@ -41,7 +41,7 @@ func new(c echo.Context) error {
 		return err
 	}
 
-	title := c.FormValue("title")
+	email := c.FormValue("email")
 	path := "statics/resumes/" + strconv.FormatInt(time.Now().UTC().Unix(), 10)
 
 	// Source
@@ -68,7 +68,7 @@ func new(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var resume = models.Resume{Title: title, Path: path + ".pdf", Content: content.Body}
+	var resume = models.Resume{Email: email, Path: path + ".pdf", Content: content.Body}
 	mysql.Db.Create(&resume)
 
 	return c.String(http.StatusOK, "success")
