@@ -10,5 +10,6 @@ func HandleRequests() {
 	e.GET("/", resume.Index)
 	e.GET("/search", resume.Search)
 	e.POST("/", resume.New)
+	e.Static("/statics", "statics")
 	e.Logger.Fatal(e.Start(":5600"))
 }

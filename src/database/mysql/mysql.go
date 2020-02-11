@@ -30,4 +30,8 @@ func Open() {
 	)
 
 	Db, Err = gorm.Open("mysql", mysqlCredentials)
+
+	if Err != nil {
+		log.Fatal("connect to db failed")
+	}
 }
