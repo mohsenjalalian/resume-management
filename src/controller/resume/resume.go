@@ -19,7 +19,7 @@ func New(c echo.Context) error {
 	fl, err := c.FormFile("file")
 
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	email := c.FormValue("email")
@@ -28,7 +28,7 @@ func New(c echo.Context) error {
 	// Source
 	src, err := fl.Open()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	defer src.Close()
@@ -36,13 +36,13 @@ func New(c echo.Context) error {
 	// Destination
 	dst, err := os.Create(path + ".pdf")
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer dst.Close()
 
 	// Copy
 	if _, err = io.Copy(dst, src); err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	content, err := docconv.ConvertPath(path + ".pdf")

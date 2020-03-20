@@ -17,5 +17,18 @@ services:
             - PMA_HOST=rsm-mariadb
         ports:
             - 8080:80
+    rsm-app:
+        build:
+            context: .
+            dockerfile: ./docker/golang/Dockerfile
+        image: rsm-app:latest
+        container_name: rsm-app
+        logging:
+            driver: json-file
+            options:
+                max-size: "1m"
+                max-file: "4"
+        ports:
+            - 5600:5600
 volumes:
     mariadata:
