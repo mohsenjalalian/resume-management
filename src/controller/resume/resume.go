@@ -1,18 +1,17 @@
 package resume
 
 import (
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
+	"strconv"
 
 	"code.sajari.com/docconv"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/mohsenjalalian/resume-management/database/mysql"
 	"github.com/mohsenjalalian/resume-management/model"
+	"github.com/mohsenjalalian/resume-management/util/file"
 )
 
 func New(c echo.Context) error {
@@ -25,23 +24,9 @@ func New(c echo.Context) error {
 	email := c.FormValue("email")
 	path := "statics/resumes/" + strconv.FormatInt(time.Now().UTC().Unix(), 10)
 
-	// Source
-	src, err := fl.Open()
+	_, err = file.Upload(path, fl)
+
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	defer src.Close()
-
-	// Destination
-	dst, err := os.Create(path + ".pdf")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer dst.Close()
-
-	// Copy
-	if _, err = io.Copy(dst, src); err != nil {
 		log.Fatal(err)
 	}
 

@@ -23,6 +23,8 @@ services:
             dockerfile: ./docker/golang/Dockerfile
         image: rsm-app:latest
         container_name: rsm-app
+        volumes:
+            - ./src/statics:/src/resume-management/statics
         logging:
             driver: json-file
             options:
